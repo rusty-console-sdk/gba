@@ -1,7 +1,12 @@
+# Tools for every SDK in the collection, so one `mise install` covers them all.
+# Group them by the SDK that needs them; a tool several SDKs share goes under
+# the first one and says who else uses it.
 [tools]
 just = "1.59.0"
-# arm-none-eabi binutils and GCC: the assembler and linker for both backends, and
-# the C compiler for the mrustc backend. mise's gcc-arm-none-eabi entry stops at 13.3.
+
+# gba: arm-none-eabi binutils and GCC, the assembler and linker for both
+# backends and the C compiler for the mrustc backend. mise's
+# gcc-arm-none-eabi entry stops at 13.3.
 "github:xpack-dev-tools/arm-none-eabi-gcc-xpack" = "15.2.1-1.1"
-# Fixes the ROM header (Nintendo logo, checksum) so a ROM boots on hardware.
+# gba: fixes the ROM header (Nintendo logo, checksum) so a ROM boots on hardware.
 "cargo:agb-gbafix" = "0.25.0"
