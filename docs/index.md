@@ -6,7 +6,7 @@ Rust SDKs for game consoles. Each console gets its own SDK, built from one repos
 | --- | --- | --- |
 | [Game Boy Advance](gba/index.md) | `gba-sdk` | A ROM boots in mGBA: mode 3, buttons, logging. Not on crates.io yet. |
 
-More consoles will follow the GBA: the DS, the N64, 6502 consoles and maybe the SNES. [Consoles](consoles.md) has the plan.
+More consoles will follow the GBA: the DS, the 3DS, the PlayStation Vita, the N64, 6502 consoles and maybe the SNES. [Consoles](consoles.md) has the plan.
 
 ## The repository
 
