@@ -50,7 +50,7 @@ From the root of the checkout. Inside `gba/`, drop the `gba::` prefix.
 | `just gba::asm` | Assembles `crt0.s` into `target/rt/crt0.o`. The recipes below run it first. |
 | `just gba::rom <name>` | Builds a ROM into `target/roms/<name>.gba` and prints its section sizes. |
 | `just gba::test [name] [line]` | Builds the ROM, runs it headless in mGBA for four seconds and checks that its log contains `line`. Defaults to `hello` and its line. |
-| `just remote gba::<recipe>` | Syncs the checkout to the `gba-build` host (or `SDK_BUILD_HOST`) and runs the recipe there. ROMs come back to `gba/target/roms/`. |
+| `just remote gba::<recipe>` | Syncs the checkout to the `sdk-build` host (or `SDK_BUILD_HOST`) and runs the recipe there. ROMs come back to `gba/target/roms/`. |
 | `just gba::run [name]` | Builds remotely and opens the ROM in a local `mgba-qt`. |
 | `uvx zensical build --strict` | Run at the root: builds this site into `site/`. `uvx zensical serve` previews it. |
 

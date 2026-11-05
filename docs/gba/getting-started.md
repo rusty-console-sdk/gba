@@ -56,4 +56,4 @@ fn main() -> ! {
 
 ## Building on another machine
 
-The ARM toolchain and emulator can live on a remote machine. `just remote gba::<recipe>` syncs the whole checkout there with `rsync`, runs the recipe through `mise exec` and copies `gba/target/roms/` back; `just gba::run <name>` builds remotely and opens the ROM in a local `mgba-qt`. The host is the SSH alias `gba-build`, or whatever `SDK_BUILD_HOST` says.
+The ARM toolchain and emulator can live on a remote machine. `just remote gba::<recipe>` syncs the whole checkout there with `rsync`, runs the recipe through `mise exec` and copies `gba/target/roms/` back; `just gba::run <name>` builds remotely and opens the ROM in a local `mgba-qt`. The host is the SSH alias `sdk-build`, or whatever `SDK_BUILD_HOST` says.
