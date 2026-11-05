@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = ["crates/regs", "crates/rt", "crates/sdk", "examples/hello"]
+
+# Each manifest spells its fields out instead of inheriting them from here:
+# minicargo (mrustc's cargo) reads a subset of Cargo's manifest format, and
+# workspace inheritance isn't known to be in it.
+
+# Panics abort on every backend; there is no unwinder on the GBA.
+[profile.dev]
+panic = "abort"
+opt-level = 1
+
+[profile.release]
+panic = "abort"
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+debug = true

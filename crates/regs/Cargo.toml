@@ -1,0 +1,11 @@
+[package]
+name = "gba-sdk-regs"
+description = "Typed volatile access to the Game Boy Advance's memory-mapped registers and memory regions"
+version = "0.1.0"
+edition = "2021"
+# The newest rustc source mrustc is tested against. Use nothing newer.
+rust-version = "1.90"
+license = "BSD-3-Clause"
+repository = "https://github.com/rusty-console-sdk/gba"
+
+[dependencies]
