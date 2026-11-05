@@ -103,10 +103,10 @@ impl<T: Copy, const N: usize> Block<T, N> {
         let mut p = self.base as *mut T;
         for _ in 0..N {
             // SAFETY: `new` covers the whole block, and `p` stays within it.
-            unsafe {
-                p.write_volatile(value);
-                p = p.add(1);
-            }
+            unsafe { p.write_volatile(value) };
+            // Not `add`: hardware memory isn't a Rust allocation, which `add`
+            // would require it to be.
+            p = p.wrapping_add(1);
         }
     }
 }

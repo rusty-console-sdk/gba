@@ -40,8 +40,9 @@ test name="hello" expect="hello from gba-sdk": (rom name)
 # Sync the working copy to the build server and run a recipe there.
 remote +args:
     rsync -az --delete --exclude .git --filter=':- .gitignore' ./ {{host}}:{{remote_dir}}/
-    ssh {{host}} "export PATH=\"\$HOME/.cargo/bin:\$HOME/.local/bin:\$PATH\" && cd {{remote_dir}} && mise exec -- just $(printf '%q ' "$@")"
-    rsync -az {{host}}:{{remote_dir}}/target/roms/ target/roms/ 2>/dev/null || true
+    ssh {{host}} "export PATH=\"\$HOME/.cargo/bin:\$HOME/.local/bin:\$PATH\" && cd {{remote_dir}} && mkdir -p target/roms && mise exec -- just $(printf '%q ' "$@")"
+    mkdir -p target/roms
+    rsync -az {{host}}:{{remote_dir}}/target/roms/ target/roms/
 
 # Build a ROM on the server and open it in a local mgba-qt.
 run name="hello": (remote "rom" name)
