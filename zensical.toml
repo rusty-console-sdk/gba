@@ -1,21 +1,25 @@
 [project]
-site_name = "gba-sdk"
-site_description = "Game Boy Advance SDK for Rust."
-site_url = "https://rusty-console-sdk.github.io/gba/"
-repo_url = "https://github.com/rusty-console-sdk/gba"
-repo_name = "rusty-console-sdk/gba"
-copyright = "gba-sdk is free software under the BSD-3-Clause license"
+site_name = "Rusty Console SDK"
+site_description = "Rust SDKs for game consoles."
+site_url = "https://rusty-console-sdk.github.io/sdk/"
+repo_url = "https://github.com/rusty-console-sdk/sdk"
+repo_name = "rusty-console-sdk/sdk"
+copyright = "The Rusty Console SDK is free software under the BSD-3-Clause license"
 
+# One section per console, with its pages under docs/<console>/.
 nav = [
   { "Overview" = "index.md" },
-  { "Getting started" = "getting-started.md" },
-  { "Video" = "video.md" },
-  { "Input" = "input.md" },
-  { "Logging and panics" = "logging.md" },
-  { "The runtime" = "runtime.md" },
-  { "Backends" = "backends.md" },
-  { "Development" = "development.md" },
-  { "Roadmap" = "roadmap.md" },
+  { "Game Boy Advance" = [
+    { "Overview" = "gba/index.md" },
+    { "Getting started" = "gba/getting-started.md" },
+    { "Video" = "gba/video.md" },
+    { "Input" = "gba/input.md" },
+    { "Logging and panics" = "gba/logging.md" },
+    { "The runtime" = "gba/runtime.md" },
+    { "Backends" = "gba/backends.md" },
+    { "Development" = "gba/development.md" },
+    { "Roadmap" = "gba/roadmap.md" },
+  ] },
 ]
 
 [project.theme]

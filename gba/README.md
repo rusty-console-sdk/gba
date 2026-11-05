@@ -35,4 +35,6 @@ just gba::test hello    # runs it headless in mGBA and checks its log
 
 Inside `gba/`, the same recipes work without the `gba::` prefix. The nightly toolchain in `gba/rust-toolchain.toml` installs itself on the first `cargo` call. Builds can also run on a remote machine with `just remote gba::<recipe>`; see the root `AGENTS.md`.
 
+The [docs](https://rusty-console-sdk.github.io/sdk/gba/) cover [getting started](https://rusty-console-sdk.github.io/sdk/gba/getting-started/), each hardware area, [the runtime](https://rusty-console-sdk.github.io/sdk/gba/runtime/), [the backends](https://rusty-console-sdk.github.io/sdk/gba/backends/) and the [roadmap](https://rusty-console-sdk.github.io/sdk/gba/roadmap/).
+
 License: BSD-3-Clause.

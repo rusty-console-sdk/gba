@@ -20,7 +20,7 @@ Finished items stay in their section with a check mark, so each section shows ho
 - [ ] Panics on screen as well as in the log.
 - [ ] Memory functions in `rt` as assembly, shared by both backends.
 - [ ] A test that every `.iwram` function really is in IWRAM.
-- [ ] CI: `just check` and `just test` on every push.
+- [ ] CI: `just gba::check` and `just gba::test` on every push.
 
 ## Milestone 2: graphics
 
@@ -45,7 +45,7 @@ Finished items stay in their section with a check mark, so each section shows ho
 
 ## Milestone 5: a real game
 
-- [ ] A small complete game in `examples/`, built on both backends.
+- [ ] A small complete game in `gba/examples/`, built on both backends.
 - [ ] `cargo gba-sdk`, so a game outside this repository builds the same way.
 - [ ] Publish `gba-sdk` on crates.io.
 - [ ] A run on hardware with a flash cart for everything timing-sensitive.

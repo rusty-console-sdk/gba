@@ -1,43 +1,26 @@
-# gba-sdk
+# Rusty Console SDK
 
-gba-sdk is a Game Boy Advance SDK for Rust. A game is a `no_std` crate built for `thumbv4t-none-eabi`; the SDK supplies the startup code, the linker script, typed access to the hardware and an API on top of it.
+Rust SDKs for game consoles. Each console gets its own SDK, built from one repository, with typed access to the hardware, startup code and an API games are written against. Games are `no_std` Rust.
 
-```rust
-#![no_std]
-#![no_main]
+| Console | Crate | Status |
+| --- | --- | --- |
+| [Game Boy Advance](gba/index.md) | `gba-sdk` | A ROM boots in mGBA: mode 3, buttons, logging. Not on crates.io yet. |
 
-use gba_sdk::entry;
-use gba_sdk::input::{Button, Buttons};
-use gba_sdk::video::{wait_for_vblank, Color, Mode3};
+More consoles will follow the GBA.
 
-entry!(main);
+## The repository
 
-fn main() -> ! {
-    let mut screen = Mode3::enable();
-    let mut shown = None;
-    loop {
-        let color = if Buttons::read().held(Button::A) {
-            Color::GREEN
-        } else {
-            Color::rgb(4, 8, 20)
-        };
-        if shown != Some(color) {
-            screen.clear(color);
-            shown = Some(color);
-        }
-        wait_for_vblank();
-    }
-}
+Every SDK lives in its own directory of [rusty-console-sdk/sdk](https://github.com/rusty-console-sdk/sdk), with its own Cargo workspace and Rust toolchain. The root ties them together:
+
+- `mise install` at the root fetches the tools for every SDK.
+- `just` at the root lists every SDK's recipes. Each SDK is a module named after its directory, so the GBA's are `just gba::check`, `just gba::test` and so on.
+- `just remote <sdk>::<recipe>` runs a recipe on a build machine over SSH and copies the ROMs back.
+
+```sh
+git clone https://github.com/rusty-console-sdk/sdk
+cd sdk
+mise install
+just gba::test hello
 ```
 
-## What it gives you
-
-- **A ROM that boots.** [The runtime](runtime.md) holds the header, startup and linker script, so a game is a function. `entry!` names it.
-- **Typed hardware access.** Registers are `Reg<u16>` or `Reg<u32>` with volatile reads and writes, never references, so the compiler can't reorder or elide them. Byte writes, which VRAM, palette RAM and OAM mishandle, don't exist for those regions.
-- **An API that grows by hardware area.** [Video](video.md) and [input](input.md) today; sound, timers, DMA, interrupts and saves follow the [roadmap](roadmap.md).
-- **[Logging](logging.md) through mGBA**, and panics that land in the same log.
-- **Two backends, one source.** The native backend is `rustc`. A second one through [mrustc](https://github.com/thepowersgang/mrustc), which emits C for `arm-none-eabi-gcc`, is planned; see [Backends](backends.md).
-
-## Status
-
-gba-sdk is at its first milestone: the example above builds, boots in mGBA and reacts to a button. The API covers mode 3 and the buttons. Everything else on the [roadmap](roadmap.md) is still to come, and nothing has been tested on hardware yet.
+Start with the GBA's [getting started](gba/getting-started.md) page.

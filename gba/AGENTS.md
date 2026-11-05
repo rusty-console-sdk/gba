@@ -150,4 +150,14 @@ Existing crates ([agb](https://github.com/agbrs/agb), [gba](https://github.com/r
 
 ## Docs
 
-The root `AGENTS.md` has the docs rules. For the GBA: planned pages cover getting started, one page per hardware area, the two backends with a table of what works on each, and a roadmap. Examples in the docs compile on both backends. When the layout, build, backends or tooling of the GBA SDK change, update the overview and the build section here.
+The root `AGENTS.md` has the docs rules. The GBA's pages are in `docs/gba/` at the root, under the "Game Boy Advance" section of `zensical.toml`'s `nav`:
+
+- `index.md`: what gba-sdk is, with the hello example, and the status.
+- `getting-started.md`: installing, building and running the example, writing a ROM, remote builds.
+- `video.md`, `input.md`, `logging.md`: one page per hardware area the SDK covers, each describing every public item of its module. A new module gets a page and a `nav` entry.
+- `runtime.md`: what `rt` does before `main`, `entry!`, the memory layout from `gba.ld`, IWRAM placement.
+- `backends.md`: the two backends, the pipeline diagram, mrustc's constraints, and the table of what works on each. A feature that only works on one backend gets a row with the reason.
+- `development.md`: toolchain, layout, the commands table (keep it in step with `gba/justfile`), testing, docs.
+- `roadmap.md`: the milestones from this file as checklists.
+
+Whole programs in the docs are compiled as ROMs, on both backends once mrustc exists. When the layout, build, backends or tooling of the GBA SDK change, update the overview and the build section here.

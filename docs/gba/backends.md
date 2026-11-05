@@ -23,7 +23,7 @@ flowchart TD
 
 ## Native
 
-`cargo build --target thumbv4t-none-eabi` with `-Zbuild-std=core`, since the target is Tier 3 and ships no prebuilt `core`. `.cargo/config.toml` adds `-Ctarget-cpu=arm7tdmi`, the linker script and the assembled `crt0.o` to the link. `just rom` wraps all of it.
+`cargo build --target thumbv4t-none-eabi` with `-Zbuild-std=core`, since the target is Tier 3 and ships no prebuilt `core`. `gba/.cargo/config.toml` adds `-Ctarget-cpu=arm7tdmi`, the linker script and the assembled `crt0.o` to the link. `just gba::rom` wraps all of it.
 
 ## mrustc
 

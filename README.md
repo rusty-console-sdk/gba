@@ -20,6 +20,6 @@ just gba::test hello    # builds the GBA example and runs it in mGBA
 
 To build on another machine over SSH instead, set up that machine the same way and run `just remote gba::test hello`. `AGENTS.md` describes the setup.
 
-The [docs](https://rusty-console-sdk.github.io/gba/) cover [getting started](https://rusty-console-sdk.github.io/gba/getting-started/), each hardware area, [the runtime](https://rusty-console-sdk.github.io/gba/runtime/), [the backends](https://rusty-console-sdk.github.io/gba/backends/) and the [roadmap](https://rusty-console-sdk.github.io/gba/roadmap/).
+The [docs](https://rusty-console-sdk.github.io/sdk/) have a section per console. For the GBA, start with [getting started](https://rusty-console-sdk.github.io/sdk/gba/getting-started/).
 
 License: BSD-3-Clause.
