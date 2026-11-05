@@ -1,12 +1,12 @@
 # Rusty Console SDK
 
-Rust SDKs for game consoles. Each console gets its own SDK, built from one repository, with typed access to the hardware, startup code and an API games are written against. Games are `no_std` Rust.
+Rust SDKs for game consoles. Each console gets its own SDK, built from one repository, with an API games are written against. On consoles without an operating system, like the GBA, the SDK also brings the startup code and typed access to the hardware, and games are `no_std` Rust.
 
 | Console | Crate | Status |
 | --- | --- | --- |
 | [Game Boy Advance](gba/index.md) | `gba-sdk` | A ROM boots in mGBA: mode 3, buttons, logging. Not on crates.io yet. |
 
-More consoles will follow the GBA: the DS, the 3DS, the PlayStation Vita, the N64, 6502 consoles and maybe the SNES. [Consoles](consoles.md) has the plan.
+More consoles will follow the GBA: the DS, the 3DS, the PlayStation Vita, maybe the Switch, the N64, 6502 consoles and maybe the SNES. [Consoles](consoles.md) has the plan.
 
 ## The repository
 

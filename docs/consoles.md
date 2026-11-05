@@ -10,9 +10,10 @@ The order puts SDK work on compilers that already exist ahead of anything that n
 | 2 | Nintendo DS | ARM946E-S and ARM7TDMI | `rustc` for the ARM targets the GBA uses, and the same GCC for mrustc | Two CPUs talking to each other, the 3D engine, the touch screen |
 | 3 | Nintendo 3DS | ARM11 MPCore | `rustc` for `armv6k-nintendo-3ds`, with `std` | Fitting an SDK around Horizon OS, the GPU |
 | 4 | PlayStation Vita | ARM Cortex-A9 | `rustc` for `armv7-sony-vita-newlibeabihf`, with `std` | Fitting an SDK around the Vita's OS, the GPU |
-| 5 | Nintendo 64 | MIPS VR4300 | `rustc` with a custom target based on `mips-mti-none-elf`; GCC for `mips64-elf` | The RSP, the graphics and sound coprocessor with its own microcode |
-| 6 | PC Engine or NES | 6502 family | llvm-mos, through a Rust fork | Tiny memory, a 16-bit `usize`, bank-switched ROM |
-| 7 | Super Nintendo | WDC 65816 | Unknown until a spike; possibly llvm-mos, possibly a custom codegen backend | Banked 24-bit addresses, 8- and 16-bit modes |
+| 5 | Nintendo Switch (maybe) | ARM Cortex-A57 | `rustc` for `aarch64-nintendo-switch-freestanding`, without `std` | Testing without a dependable emulator |
+| 6 | Nintendo 64 | MIPS VR4300 | `rustc` with a custom target based on `mips-mti-none-elf`; GCC for `mips64-elf` | The RSP, the graphics and sound coprocessor with its own microcode |
+| 7 | PC Engine or NES | 6502 family | llvm-mos, through a Rust fork | Tiny memory, a 16-bit `usize`, bank-switched ROM |
+| 8 | Super Nintendo | WDC 65816 | Unknown until a spike; possibly llvm-mos, possibly a custom codegen backend | Banked 24-bit addresses, 8- and 16-bit modes |
 
 ## Nintendo DS
 
@@ -28,6 +29,16 @@ That changes what the SDK is. There is no startup code, linker script or registe
 - **Vita**: the target uses [VitaSDK](https://github.com/vitasdk)'s toolchain and libraries, and [cargo-vita](https://github.com/vita-rust/cargo-vita) already packages Rust programs into installable `.vpk` files. The same build-on-it-or-beside-it question applies.
 
 mrustc isn't planned for either. Its value on the GBA is GCC's code generation for a small target, and these consoles already have mature C toolchains, plenty of memory, and a `std` that mrustc's output would have to match.
+
+## Nintendo Switch
+
+The Switch is a maybe, and its place in the order depends on how well it can be tested when work would start.
+
+The compiler side costs nothing: Rust has `aarch64-nintendo-switch-freestanding`, a Tier 3 ARM64 target that LLVM handles well. Unlike the 3DS and Vita targets it comes without `std`, so the SDK stays `no_std` and binds [libnx](https://github.com/switchbrew/libnx), the established C library for Switch homebrew, itself. Like the 3DS and Vita SDKs, it would be an API over the operating system rather than over bare hardware.
+
+Like the 3DS and Vita, the Switch only runs homebrew under custom firmware ([Atmosphère](https://github.com/Atmosphere-NX/Atmosphere)), and getting there is the player's risk, not the SDK's: software can't brick a console by running as an app. The route in is narrower than on the other two, though. Only early Switch units can be modified by software; later ones need a soldered modchip, which is where real hardware damage happens. Running the firmware from the SD card (emuMMC) keeps the console's own storage untouched, which makes a ban for going online the more likely problem. The docs for this SDK would say all of that up front.
+
+The real obstacle is testing. Every other SDK here runs its test ROMs headless in an emulator. Nintendo shut down the main Switch emulators, Yuzu and Ryujinx, in 2024, and forks continue, but none is something to build a test setup on yet, so testing would lean on real hardware far more than for any other console. This plan covers the original Switch family only, since the Switch 2 has no known homebrew route.
 
 ## Nintendo 64
 
@@ -54,4 +65,4 @@ mrustc is ruled out for the SNES: it needs a C compiler for the 65816 that can t
 - **Sega Genesis**: Rust already has `m68k-unknown-none-elf`, a bare-metal target for its 68000, built through LLVM's younger M68k backend. It needs no compiler work and can come at any point.
 - **PlayStation**: Rust has `mipsel-sony-psx`, a ready-made target.
 
-Facts on this page that change with time, like the state of llvm-mos's 65816 support, the Rust fork, ctru-rs and cargo-vita, and Rust's list of targets, get checked again before work on a console starts.
+Facts on this page that change with time, like the state of llvm-mos's 65816 support, the Rust fork, ctru-rs and cargo-vita, Switch emulators and the Switch 2's homebrew status, and Rust's list of targets, get checked again before work on a console starts.
