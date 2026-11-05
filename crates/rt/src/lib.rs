@@ -8,6 +8,7 @@
 //! Panics abort: the handler writes the message to mGBA's log and halts.
 
 #![no_std]
+#![warn(missing_docs)]
 
 use core::fmt::Write;
 use core::panic::PanicInfo;
@@ -41,10 +42,15 @@ macro_rules! entry {
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(u16)]
 pub enum LogLevel {
+    /// Something the ROM can't continue from. Panics log at this level.
     Fatal = 0,
+    /// Something went wrong, but the ROM carries on.
     Error = 1,
+    /// Something looks off.
     Warn = 2,
+    /// Normal progress messages.
     Info = 3,
+    /// Detail for debugging.
     Debug = 4,
 }
 

@@ -9,6 +9,7 @@
 //! whenever it likes, and a read of some registers has side effects.
 
 #![no_std]
+#![warn(missing_docs)]
 
 use core::marker::PhantomData;
 
@@ -151,7 +152,10 @@ pub mod mgba {
     /// Write `ENABLE_CODE` to turn logging on; reads `ENABLED_CODE` while on.
     pub const ENABLE: Reg<u16> = unsafe { Reg::new(0x04FF_F780) };
 
+    /// The `FLAGS` bit that sends the buffer. The low bits hold the level.
     pub const SEND: u16 = 0x100;
+    /// Written to `ENABLE` to turn the interface on.
     pub const ENABLE_CODE: u16 = 0xC0DE;
+    /// Read back from `ENABLE` when mGBA is listening.
     pub const ENABLED_CODE: u16 = 0x1DEA;
 }

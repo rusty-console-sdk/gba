@@ -14,15 +14,32 @@ expect=$2
 seconds=${3:-4}
 log=${rom%.gba}.log
 
+# A log left from an earlier run must never satisfy this one.
+rm -f "$log"
+
+start=$(date +%s%N)
 set +e
 SDL_AUDIODRIVER=dummy xvfb-run -a timeout -k 1 "$seconds" stdbuf -oL -eL \
     mgba -C logToStdout=1 -C logLevel.gba.debug=127 "$rom" 2>&1 \
     | grep -v '^ALSA lib' | tee "$log"
-status=${PIPESTATUS[0]}
+statuses=("${PIPESTATUS[@]}")
 set -e
+elapsed_ms=$((($(date +%s%N) - start) / 1000000))
+status=${statuses[0]}
 
-# timeout reports 124 when SIGTERM ended the run and 137 when SIGKILL did.
-# Anything else means mGBA stopped by itself before the time was up.
+if [[ ${statuses[2]} != 0 ]]; then
+    echo "FAIL: could not write the log $log" >&2
+    exit 1
+fi
+
+# timeout reports 124 when SIGTERM ended the run and 137 when its follow-up
+# SIGKILL did. 137 can also mean something else killed mGBA (the OOM killer,
+# say), so it only counts once the full time has passed. Anything else means
+# mGBA stopped by itself before the time was up.
+if [[ $status == 137 && $elapsed_ms -lt $((seconds * 1000)) ]]; then
+    echo "FAIL: mGBA was killed after ${elapsed_ms}ms, before the ${seconds}s timeout" >&2
+    exit 1
+fi
 if [[ $status != 124 && $status != 137 ]]; then
     echo "FAIL: mGBA exited early with status $status running $rom" >&2
     exit 1

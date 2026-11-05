@@ -10,10 +10,15 @@ use gba_sdk_regs::{
 pub struct Color(pub u16);
 
 impl Color {
+    /// Black.
     pub const BLACK: Color = Color::rgb(0, 0, 0);
+    /// White.
     pub const WHITE: Color = Color::rgb(31, 31, 31);
+    /// Full red.
     pub const RED: Color = Color::rgb(31, 0, 0);
+    /// Full green.
     pub const GREEN: Color = Color::rgb(0, 31, 0);
+    /// Full blue.
     pub const BLUE: Color = Color::rgb(0, 0, 31);
 
     /// Makes a color from components in `0..=31`. Higher bits are dropped.

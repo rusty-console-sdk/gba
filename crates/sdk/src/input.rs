@@ -6,15 +6,25 @@ use gba_sdk_regs::KEYINPUT;
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 #[repr(u16)]
 pub enum Button {
+    /// The A button.
     A = 1 << 0,
+    /// The B button.
     B = 1 << 1,
+    /// Select.
     Select = 1 << 2,
+    /// Start.
     Start = 1 << 3,
+    /// Right on the pad.
     Right = 1 << 4,
+    /// Left on the pad.
     Left = 1 << 5,
+    /// Up on the pad.
     Up = 1 << 6,
+    /// Down on the pad.
     Down = 1 << 7,
+    /// The right shoulder button.
     R = 1 << 8,
+    /// The left shoulder button.
     L = 1 << 9,
 }
 

@@ -5,6 +5,7 @@
 //! [`video::wait_for_vblank`]. Logging goes to mGBA through [`log!`].
 
 #![no_std]
+#![warn(missing_docs)]
 
 // Keep the runtime in the link even when a ROM calls nothing in it: it
 // holds the panic handler.
