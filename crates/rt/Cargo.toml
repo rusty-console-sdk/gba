@@ -1,0 +1,11 @@
+[package]
+name = "gba-sdk-rt"
+description = "Startup code, linker script and panic handler for Game Boy Advance ROMs"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "BSD-3-Clause"
+repository = "https://github.com/rusty-console-sdk/gba"
+
+[dependencies]
+gba-sdk-regs = { path = "../regs", version = "0.1.0" }

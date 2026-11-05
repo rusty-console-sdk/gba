@@ -1,0 +1,10 @@
+# Only the GBA target is configured here, so host tools build normally.
+# -Zbuild-std is passed by the just recipes, since it would rebuild std for the
+# host too if it lived here.
+[target.thumbv4t-none-eabi]
+rustflags = [
+  "-Ctarget-cpu=arm7tdmi",
+  "-Clink-arg=-Tcrates/rt/gba.ld",
+  # Assembled by `just asm` from crates/rt/src/crt0.s.
+  "-Clink-arg=target/rt/crt0.o",
+]

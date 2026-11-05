@@ -4,11 +4,11 @@
 
 gba is a Game Boy Advance SDK for Rust, published on crates.io as `gba-sdk`. Games and the SDK itself are written in `no_std` Rust and compile through two backends from the same source. License: BSD-3-Clause.
 
-**Status: nothing is built yet.** This repository holds a license, a README and this file. Everything below about crates, recipes and tools is the plan, not a description of existing code. When a part gets built, rewrite its section to describe what exists.
+**Status: the native half of milestone 0 is built.** A ROM boots in mGBA from `rt`'s startup code, fills the screen in mode 3, reads the buttons and logs to mGBA. Nothing in the mrustc column exists yet. Sections below marked "planned" describe intent, not code; when a part gets built, rewrite its section to describe what exists.
 
 | Backend | Pipeline | Role | Status |
 | --- | --- | --- | --- |
-| native | `rustc` (LLVM) for `thumbv4t-none-eabi` | The reference. Every feature works here first. | planned |
+| native | `rustc` (LLVM) for `thumbv4t-none-eabi` | The reference. Every feature works here first. | builds and boots; `just rom`, `just test` |
 | mrustc | `mrustc` to C, then `arm-none-eabi-gcc` | Second backend. Gives us GCC's code generation and a C-based build. | planned, depends on the spike (milestone 0) |
 
 ### Why mrustc is the second backend
@@ -22,18 +22,18 @@ So mrustc is worth supporting, as long as it never holds the SDK back:
 - Native never waits on mrustc. If a feature can't work under mrustc yet, record that in the feature table in `docs/` and move on.
 - We do not contribute to mrustc: no pull requests, no issues. Fixes we need stay local (see The mrustc backend).
 
-### Planned layout
+### Layout
 
-Each crate has one job. The crates that end up in a ROM stay free of dependencies wherever possible, because every dependency has to compile under mrustc too.
+Each crate has one job. The crates that end up in a ROM stay free of dependencies wherever possible, because every dependency has to compile under mrustc too. The workspace is `Cargo.toml` at the root. Each manifest spells out its `version`, `edition`, `rust-version = "1.90"` and path dependencies rather than inheriting them from `[workspace.package]`, since minicargo isn't known to read workspace inheritance.
 
-- `crates/regs`: typed, volatile access to memory-mapped registers and the memory regions. No policy.
-- `crates/rt`: startup, the interrupt trampoline, BIOS calls, `memcpy` and friends, the linker script. Most of it is assembly.
-- `crates/sdk`: the `gba-sdk` package, the API games use: video, input, sound, timers, DMA, interrupts, saves, fixed-point math.
-- `tools/`: ordinary host Rust programs: the asset converter, the test runner, and `cargo-gba-sdk`. These are never built by mrustc.
-- `tools/cargo-gba-sdk`: the `cargo gba-sdk` subcommand, how people using the published crate build a game. ROM crates have no build scripts, so plain `cargo build` can't assemble `crates/rt`'s `.s` files. This tool assembles, links and runs `gbafix`, on either backend, and expects `arm-none-eabi` binutils to be installed. Build logic moves here from the `just` recipes as it settles, so this repo and its users build the same way. (The name `cargo-gba` on crates.io belongs to an unrelated crate.)
-- `targets/`: the mrustc target file and the C compiler wrapper.
-- `examples/`: small games and feature demos, which double as test ROMs.
-- `tests/`: ROMs that run in the emulator and report results.
+- `crates/regs` (`gba-sdk-regs`): typed, volatile access to memory-mapped registers and memory. `Reg<T>` is one cell with `read` and `write`; `Block<T, N>` is a run of them (`get`, `fill`). Holds the register constants (`DISPCNT`, `VCOUNT`, `KEYINPUT`, `IME`, `MODE3_FRAME` and `MODE3_FRAME_WORDS`) and mGBA's debug registers under `mgba`. The constants over VRAM are `u16` or `u32`, since VRAM, palette RAM and OAM mishandle byte writes; `Block<u8, _>` exists only for mGBA's string buffer, so never make one over hardware memory. No policy.
+- `crates/rt` (`gba-sdk-rt`): what every ROM links. `src/crt0.s` is the ROM header and startup (gas, ARM mode): the IRQ, SVC and user stacks, `.data` copied from ROM to IWRAM, `.bss` zeroed, then `bx` to `main`. `gba.ld` is the linker script: `.data` takes `.iwram*` input sections so `#[link_section = ".iwram"]` code lands in IWRAM, and the IWRAM region stops 2K short of the user stack so an oversized `.data` or `.bss` fails at link time. `src/lib.rs` has `entry!` (defines the exported `main`), the `log!` macro and `MgbaLog` over mGBA's debug registers, and the panic handler, which logs at `Fatal` and loops. Planned here: the interrupt trampoline, BIOS calls and the memory functions.
+- `crates/sdk` (`gba-sdk`): the API games use. Today `video` (`Color`, `Mode3`, `wait_for_vblank`, which polls `VCOUNT`) and `input` (`Button`, `Buttons`). Re-exports `regs`, `entry!`, `log!` and `LogLevel`. It has `extern crate gba_sdk_rt` so the panic handler is always linked. Planned: sound, timers, DMA, interrupts, saves, fixed-point math.
+- `examples/hello`: the smallest ROM, mode 3 with a color that changes while A is held. It logs `hello from gba-sdk`, which `just test` looks for, so it doubles as the boot test.
+- `tools/run-rom.sh`: runs a ROM headless in mGBA, saves the log next to it and checks for an expected line. `just test` calls it.
+- `target/roms/`: built `.gba` files and their mGBA logs (ignored by git).
+- Planned: more host programs in `tools/` (the asset converter, a test runner over libmgba, and `cargo-gba-sdk`), `targets/` for the mrustc target file and C compiler wrapper, `tests/` for ROMs that report results.
+- `tools/cargo-gba-sdk` (planned): the `cargo gba-sdk` subcommand, how people using the published crate build a game. ROM crates have no build scripts, so plain `cargo build` can't assemble `crates/rt`'s `.s` files. This tool assembles, links and runs `gbafix`, on either backend, and expects `arm-none-eabi` binutils to be installed. Build logic moves here from the `just` recipes as it settles, so this repo and its users build the same way. (The name `cargo-gba` on crates.io belongs to an unrelated crate.)
 
 ```mermaid
 flowchart TD
@@ -62,44 +62,43 @@ flowchart TD
 
 ## Building and testing
 
-The commands in this section are the plan. Replace them with the real ones as they land.
-
 ### Where builds run
 
 Builds and tests run on a remote build server over SSH. The local machine edits code and views results, so don't install Rust or the ARM toolchain locally just to run a build.
 
-- Connect with `ssh gba-build`, a host alias each developer defines in their own `~/.ssh/config`. Scripts and recipes use the alias too.
+- Connect with `ssh gba-build`, a host alias each developer defines in their own `~/.ssh/config`. Scripts and recipes use the alias; `GBA_BUILD_HOST` overrides it.
 - This repository is public. Never commit server addresses, hostnames, usernames, hardware details or anything else about private infrastructure.
 - The working copy goes in `~/Developer/gba` on the server, synced with `rsync` (respecting `.gitignore`). Never edit files there, since the next sync overwrites them.
-- Non-interactive SSH sessions may not have the toolchains on `PATH`, so remote commands set it first: `export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"`.
+- Non-interactive SSH sessions don't have the toolchains on `PATH`, so remote commands set it first (`export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"`) and run recipes through `mise exec -- just ...`. The `remote` recipe does both.
 - `just remote <recipe>` syncs and runs a recipe on the server. Built ROMs sync back to `target/roms/` so `mgba-qt` can open them locally.
 - Run long builds (mrustc's `core` above all) so that a dropped connection doesn't kill them.
-- Anything beyond this project's directories on the server needs the user's say-so. System packages count.
+- Anything beyond this project's directories on the server needs the user's say-so. System packages count. Installed so far: `mgba-sdl` and `xvfb`.
+- When killing stray processes there, match by exact name (`pkill -x mgba`), never with `pkill -f` and a pattern that appears in your own shell's command line.
 
 ### Toolchain
 
-- Rust: `rust-toolchain.toml` pins a dated nightly with `rust-src`, `clippy` and `rustfmt`, installed by rustup. `thumbv4t-none-eabi` is a Tier 3 target with no prebuilt `core`, so it needs `-Zbuild-std`, and that needs nightly. Pass it in the recipes rather than in a root `.cargo/config.toml`, so host tools still build normally.
-- Everything else goes in `mise.toml`: `just`, and `github:xpack-dev-tools/arm-none-eabi-gcc-xpack` at 15.2.1-1.1. Avoid mise's `gcc-arm-none-eabi` entry, which stops at 13.3.
-- mrustc: built from a pinned commit into a directory ignored by git. The commit lives in one file, and bumping it is its own change.
-- Emulator: mGBA, currently 0.10.5.
-- `agb-gbafix` fixes ROM headers.
+- Rust: `rust-toolchain.toml` pins `nightly-2026-10-15` with `rust-src`, `clippy` and `rustfmt`, installed by rustup on the first `cargo` call. `thumbv4t-none-eabi` is a Tier 3 target with no prebuilt `core`, so it needs `-Zbuild-std=core`, and that needs nightly. The recipes pass it (with `-Zbuild-std-features=compiler-builtins-mem`, which supplies `memcpy` and friends until `rt` does) rather than a root `.cargo/config.toml`, which would rebuild std for host tools too. `.cargo/config.toml` holds only the `[target.thumbv4t-none-eabi]` rustflags: `-Ctarget-cpu=arm7tdmi`, the linker script and the assembled `crt0.o`.
+- Everything else goes in `mise.toml`: `just` 1.59.0, `github:xpack-dev-tools/arm-none-eabi-gcc-xpack` 15.2.1-1.1 (mise picks the right asset by itself) and `cargo:agb-gbafix` 0.25.0. Avoid mise's `gcc-arm-none-eabi` entry, which stops at 13.3.
+- mrustc (planned): built from a pinned commit into a directory ignored by git. The commit lives in one file, and bumping it is its own change.
+- Emulator: mGBA 0.10.5, the `mgba-sdl` package on the server, run under `xvfb-run`.
 
 ### Commands
 
 `just` is the entry point and holds no logic beyond running things. Logic goes in `tools/`.
 
-- `just check`: `cargo check` and `clippy` for the target, and `cargo test` for host-testable logic.
-- `just rom <name>`: build one ROM with the native backend. `just rom-c <name>` does the same through mrustc.
-- `just test`: run every test ROM on both backends in mGBA, headless.
-- `just compare`: ROM size and cycle counts per backend, as a table.
-- `just remote <recipe>`: run any of these on the server.
-- `just run <name>`: build remotely, fetch the ROM, open it in local `mgba-qt`.
+- `just asm`: assembles `crates/rt/src/crt0.s` into `target/rt/crt0.o`. The other recipes run it first.
+- `just check`: `cargo fmt --check` and `clippy` for the target with warnings denied. Not `--all-targets`: test harnesses need `std`, which the target doesn't have.
+- `just rom <name>`: builds one ROM with the native backend into `target/roms/<name>.gba` (`agb-gbafix` reads the ELF and writes the fixed ROM in one step) and prints its section sizes. Planned: `just rom-c <name>` through mrustc.
+- `just test [name] [expect]`: builds the ROM and runs `tools/run-rom.sh`, which runs it for four seconds in headless mGBA and greps its log for `expect` (default: hello's line). In the script, `timeout` is mGBA's direct parent with `-k` because mGBA ignores SIGTERM, and `stdbuf -oL` keeps the log flowing through the pipe; without both it hangs. Planned: every test ROM on both backends.
+- `just remote <recipe...>`: runs any of these on the server. Arguments are shell-quoted on the way, so `just remote test hello "some line"` works.
+- `just run <name>`: builds remotely, fetches the ROM, opens it in local `mgba-qt`.
+- Planned: `just compare` for ROM size and cycle counts per backend.
 
 ### Testing
 
 - Add a test with every behavior change.
-- Pure logic (fixed-point math, asset parsing) gets ordinary `cargo test` on the host. Keep it in modules that don't touch hardware.
-- Anything touching hardware is a ROM in `tests/` that runs in mGBA through `tools/test-runner`, which wraps libmgba and reads results through mGBA's debug output registers. agb's `emulator/test-runner` is the model. Check agb's license before copying from it.
+- Pure logic (fixed-point math, asset parsing) gets ordinary `cargo test` on the host. Keep it in modules that don't touch hardware. Nothing has this yet.
+- Anything touching hardware is a ROM that runs in mGBA and reports through `log!`. Today that is `examples/hello` through `just test`. Planned: ROMs in `tests/` through `tools/test-runner`, which wraps libmgba and reads results through mGBA's debug output registers. agb's `emulator/test-runner` is the model. Check agb's license before copying from it.
 - The same ROM source runs under both backends with the same expected results. A test that only passes on one backend gets marked with a linked reason, not deleted.
 - Rendering tests compare frames against goldens in `tests/golden/`. Goldens are shared across backends since the output must match exactly. Regenerate one only on purpose, look at it, and say why in the commit.
 - Emulators are not hardware. Timing-sensitive features (sound, DMA, save media) also need a run on a real GBA with a flash cart before they are called done. Say so when that hasn't happened.
@@ -115,7 +114,7 @@ These decide what SDK code can look like. Code that breaks one usually still com
 - **Keep manifests simple.** minicargo reads a subset of what Cargo does. Plain `[package]`, `[dependencies]` and `[features]` until the spike shows what else works.
 - **No atomics that need compare-and-swap.** Data shared with interrupt handlers uses volatile access and short critical sections through `IME`.
 - **Panics abort.** No unwinding on either backend. The panic handler lives in `rt`, and writes to mGBA's debug output and halts.
-- **Memory functions come from `rt`.** Both `memcpy` and `__aeabi_memcpy` style names, since GCC and LLVM call different ones. Division and other arithmetic helpers come from libgcc or `compiler_builtins`.
+- **Memory functions come from `rt`.** Both `memcpy` and `__aeabi_memcpy` style names, since GCC and LLVM call different ones. Until `rt` has them, the native backend uses `compiler_builtins`' `mem` feature. Division and other arithmetic helpers come from libgcc or `compiler_builtins`.
 - **Backends stay out of the API.** No `cfg` for the backend outside `crates/rt` and `targets/`. If `crates/sdk` needs to know which compiler it's on, the abstraction is in the wrong place.
 
 ## The mrustc backend
@@ -133,7 +132,7 @@ Read from mrustc's source as of 2026-11 and not yet tested on this project. The 
 
 Prove the riskiest assumption first, then build outward. Each milestone ends with ROMs that pass on every backend that's still in play.
 
-1. **Spike, the go/no-go for mrustc.** The smallest possible ROM (mode 3, fill the screen, read a key) with `rt`'s startup and linker script, on native first. Then build `core` 1.90 with mrustc for the custom target and get the same ROM to boot in mGBA. Confirm `arm-none-eabi-gcc -mthumb -mcpu=arm7tdmi` finds a suitable libgcc multilib. Record ROM size and frame cost for both. **Go** if the ROM boots and the size and speed are in a usable range. **No-go** means mrustc stays marked experimental and the native SDK carries on.
+1. **Spike, the go/no-go for mrustc.** The smallest possible ROM (mode 3, fill the screen, read a key) with `rt`'s startup and linker script, on native first: done, that is `examples/hello`. Then build `core` 1.90 with mrustc for the custom target and get the same ROM to boot in mGBA. Confirm `arm-none-eabi-gcc -mthumb -mcpu=arm7tdmi` finds a suitable libgcc multilib. Record ROM size and frame cost for both. **Go** if the ROM boots and the size and speed are in a usable range. **No-go** means mrustc stays marked experimental and the native SDK carries on.
 2. **Foundations.** `regs`, the test runner, debug output, interrupts and `VBlankIntrWait`, panics on screen and in the log. CI from here on.
 3. **Graphics.** Tiled backgrounds, sprites, palettes, windows and blending, DMA, and the asset converter for images.
 4. **Game loop essentials.** Input, timers, fixed-point math, an optional allocator over EWRAM, saves (SRAM first, then flash and EEPROM).
@@ -176,7 +175,7 @@ Existing crates ([agb](https://github.com/agbrs/agb), [gba](https://github.com/r
 
 Always update the docs if necessary when changing or adding code. If the docs already contain outdated information, expand your scope to cover that info too. That includes this file: when the layout, build, backends or tooling change, update the overview and the build section here.
 
-The docs will be a [Zensical](https://zensical.org) site: `zensical.toml` at the root, pages in `docs/`. `uvx zensical build --strict` checks it, and `uvx zensical serve` previews it. Planned pages cover getting started, one page per hardware area, the two backends with a table of what works on each, and a `roadmap.md`.
+The docs will be a [Zensical](https://zensical.org) site: `zensical.toml` at the root, pages in `docs/`. `uvx zensical build --strict` checks it, and `uvx zensical serve` previews it. Planned pages cover getting started, one page per hardware area, the two backends with a table of what works on each, and a `roadmap.md`. Until the site exists, the crate docs (`//!` and `///` comments) and this file are the docs, so keep them current.
 
 Compile the examples you put in the docs before committing them, on both backends.
 

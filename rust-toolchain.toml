@@ -1,0 +1,5 @@
+[toolchain]
+# Nightly only for -Zbuild-std: thumbv4t-none-eabi ships no prebuilt core.
+# Code stays within Rust 1.90 features, the newest rustc mrustc is tested against.
+channel = "nightly-2026-10-15"
+components = ["rust-src", "clippy", "rustfmt"]

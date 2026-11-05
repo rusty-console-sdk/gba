@@ -1,0 +1,11 @@
+[package]
+name = "hello"
+description = "The smallest ROM: fills the screen and reacts to a button"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "BSD-3-Clause"
+publish = false
+
+[dependencies]
+gba-sdk = { path = "../../crates/sdk" }

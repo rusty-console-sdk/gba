@@ -1,0 +1,12 @@
+[package]
+name = "gba-sdk"
+description = "Game Boy Advance SDK for Rust"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "BSD-3-Clause"
+repository = "https://github.com/rusty-console-sdk/gba"
+
+[dependencies]
+gba-sdk-regs = { path = "../regs", version = "0.1.0" }
+gba-sdk-rt = { path = "../rt", version = "0.1.0" }
