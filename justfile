@@ -8,7 +8,7 @@ set positional-arguments
 mod gba
 
 # The SSH alias of the build server. Define it in your own ~/.ssh/config.
-host := env_var_or_default("SDK_BUILD_HOST", "gba-build")
+host := env_var_or_default("SDK_BUILD_HOST", "sdk-build")
 remote_dir := "Developer/sdk"
 
 default:

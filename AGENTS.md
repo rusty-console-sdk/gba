@@ -26,7 +26,7 @@ Sharing code between SDKs: not yet. When two SDKs need the same thing (the DS's 
 
 Builds and tests run on a remote build server over SSH. The local machine edits code and views results, so don't install Rust or the console toolchains locally just to run a build.
 
-- Connect with `ssh gba-build`, a host alias each developer defines in their own `~/.ssh/config`. Recipes use the alias; `SDK_BUILD_HOST` overrides it.
+- Connect with `ssh sdk-build`, a host alias each developer defines in their own `~/.ssh/config`. Recipes use the alias; `SDK_BUILD_HOST` overrides it.
 - This repository is public. Never commit server addresses, hostnames, usernames, hardware details or anything else about private infrastructure.
 - The working copy goes in `~/Developer/sdk` on the server, synced with `rsync` (respecting `.gitignore`). Never edit files there, since the next sync overwrites them.
 - Non-interactive SSH sessions don't have the toolchains on `PATH`, so remote commands set it first (`export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"`), trust the root `mise.toml` and run recipes through `mise exec -- just ...`. The `remote` recipe does all three.
