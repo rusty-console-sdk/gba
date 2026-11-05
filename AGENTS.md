@@ -70,7 +70,17 @@ Use modern code practices:
 
 Always update the docs if necessary when changing or adding code. If the docs already contain outdated information, expand your scope to cover that info too. That includes the `AGENTS.md` files: when the layout, build, backends or tooling change, update the overview and the build section in the one that owns it.
 
-The docs will be a [Zensical](https://zensical.org) site: `zensical.toml` at the root, pages in `docs/`. `uvx zensical build --strict` checks it, and `uvx zensical serve` previews it. Until the site exists, the crate docs (`//!` and `///` comments) and the `AGENTS.md` files are the docs, so keep them current.
+The docs are a [Zensical](https://zensical.org) site: `zensical.toml` at the root, pages in `docs/`. `uvx "zensical==0.0.74" build --strict` checks it and writes `site/` (ignored by git), and `uvx zensical serve` previews it. The Docs workflow runs the strict build on pull requests that touch the docs, and the Pages workflow publishes the site on every push to `main` that does (the repository's Pages source is already GitHub Actions). Pages:
+
+- `index.md`: what gba-sdk is, with the hello example, and the status.
+- `getting-started.md`: installing, building and running the example, writing a ROM, remote builds.
+- `video.md`, `input.md`, `logging.md`: one page per hardware area the SDK covers, each describing every public item of its module. A new module gets a page and a `nav` entry in `zensical.toml`.
+- `runtime.md`: what `rt` does before `main`, `entry!`, the memory layout from `gba.ld`, IWRAM placement.
+- `backends.md`: the two backends, the pipeline diagram, mrustc's constraints, and the table of what works on each. A feature that only works on one backend gets a row with the reason.
+- `development.md`: toolchain, layout, the commands table (keep it in step with the justfile), testing, docs.
+- `roadmap.md`: the milestones from this file as checklists.
+
+Code in the docs that forms a whole program is compiled as a ROM before committing; the crate docs (`//!` and `///` comments) stay current too.
 
 Compile the examples you put in the docs before committing them, on every backend the SDK has.
 
