@@ -16,6 +16,7 @@ Finished items stay in their section with a check mark, so each section shows ho
 
 - [ ] A test runner over libmgba, test ROMs under `tests/`, every test on both backends.
 - [ ] Interrupts: the trampoline in `rt`, `VBlankIntrWait`, `wait_for_vblank` that sleeps.
+- [ ] `log!` that is safe to interrupt: mGBA's string buffer is shared, so a handler that logs would corrupt a line in progress.
 - [ ] Panics on screen as well as in the log.
 - [ ] Memory functions in `rt` as assembly, shared by both backends.
 - [ ] A test that every `.iwram` function really is in IWRAM.
