@@ -73,6 +73,7 @@ Always update the docs if necessary when changing or adding code. If the docs al
 The docs are one [Zensical](https://zensical.org) site for the whole collection: `zensical.toml` at the root, pages in `docs/`, published at `https://rusty-console-sdk.github.io/sdk/`. `uvx "zensical==0.0.74" build --strict` at the root checks it and writes `site/` (ignored by git), and `uvx zensical serve` previews it. The Docs workflow runs the strict build on pull requests that touch the docs, and the Pages workflow publishes the site on every push to `main` that does (the repository's Pages source is already GitHub Actions).
 
 - `docs/index.md`: the collection, the table of consoles, how the repository fits together.
+- `docs/consoles.md`: the plan for the consoles after the GBA, their order and compiler path. Start from it when choosing or starting a console, recheck the facts it marks as changing, and update it when the plan changes.
 - `docs/<console>/`: one directory per SDK, and one `nav` section in `zensical.toml` listing its pages. Each SDK's `AGENTS.md` lists what its pages cover. Commands on these pages are written from the root (`just gba::test`), since that is where a fresh checkout starts.
 
 Code in the docs that forms a whole program is compiled before committing; the crate docs (`//!` and `///` comments) stay current too.

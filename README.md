@@ -6,7 +6,7 @@ Rust SDKs for game consoles, one directory per console.
 | --- | --- | --- | --- |
 | Game Boy Advance | [`gba/`](gba/) | `gba-sdk` | A ROM boots in mGBA: mode 3, buttons, logging. Not on crates.io yet. |
 
-More consoles will follow the GBA.
+More consoles will follow the GBA; the [consoles page](https://rusty-console-sdk.github.io/sdk/consoles/) has the plan.
 
 ## Building
 

@@ -9,6 +9,7 @@ copyright = "The Rusty Console SDK is free software under the BSD-3-Clause licen
 # One section per console, with its pages under docs/<console>/.
 nav = [
   { "Overview" = "index.md" },
+  { "Consoles" = "consoles.md" },
   { "Game Boy Advance" = [
     { "Overview" = "gba/index.md" },
     { "Getting started" = "gba/getting-started.md" },
