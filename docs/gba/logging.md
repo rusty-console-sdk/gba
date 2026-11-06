@@ -12,6 +12,8 @@ The levels are mGBA's: `Fatal`, `Error`, `Warn`, `Info` and `Debug`. A line is a
 
 On hardware, and in emulators without the interface, `log!` costs one register write and one read and prints nothing. `MgbaLog::new` does that probe (writing `0xC0DE` to the enable register and reading back `0x1DEA`), so the formatting runs only when something will receive it.
 
+That is one difference from `println!`: when nothing is listening, the arguments aren't evaluated either. Keep side effects out of them, so `log!(LogLevel::Debug, "{}", next_id())` never calls `next_id` on hardware. Compute the value first and log the result instead.
+
 To see the log, run mGBA with logging to stdout and the `gba.debug` category on, which is what `just gba::test` does:
 
 ```sh

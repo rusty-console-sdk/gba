@@ -9,6 +9,7 @@ on:
     paths:
       - "docs/**"
       - "zensical.toml"
+      - "mise.toml"
       - ".github/workflows/docs.yml"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -36,7 +37,20 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # uv's version lives in the root mise.toml, like every other tool's.
+      - name: Read the uv version
+        id: uv
+        run: |
+          version=$(sed -nE 's/^uv = "([^"]+)"$/\1/p' mise.toml)
+          if [[ -z $version ]]; then
+            echo "mise.toml has no uv pin" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: ${{ steps.uv.outputs.version }}
 
       # The docs show the pinned version in their commands, so a bump here
       # must update them too.

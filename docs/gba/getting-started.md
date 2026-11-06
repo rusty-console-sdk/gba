@@ -32,18 +32,19 @@ Inside `gba/`, the same recipes work without the prefix (`just rom hello`). `jus
 
 ## Write your own
 
-A game is a binary crate in the GBA workspace with two attributes, one macro and one function:
+A game is a binary crate in the GBA workspace with two attributes, the `entry!` macro and one function. This one also logs a line, so `just gba::test` has something to check:
 
 ```rust
 #![no_std]
 #![no_main]
 
-use gba_sdk::entry;
 use gba_sdk::video::{wait_for_vblank, Color, Mode3};
+use gba_sdk::{entry, log, LogLevel};
 
 entry!(main);
 
 fn main() -> ! {
+    log!(LogLevel::Info, "my game started");
     let mut screen = Mode3::enable();
     screen.clear(Color::rgb(4, 8, 20));
     loop {
@@ -53,7 +54,7 @@ fn main() -> ! {
 ```
 
 1. Copy `gba/examples/hello` to `gba/examples/<name>`, change the `name` in its `Cargo.toml` and add `"examples/<name>"` to `members` in `gba/Cargo.toml`.
-2. `just gba::rom <name>` builds it. `just gba::test <name> "<line>"` runs it and checks the log for a line of your choosing.
+2. Replace its `src/main.rs` with your program. `just gba::rom <name>` builds it, and `just gba::test <name> "my game started"` runs it and checks the log for that line.
 
 `main` never returns; there is nothing to return to. It runs after the [runtime](runtime.md) has copied `.data` to IWRAM and zeroed `.bss`, with interrupts masked.
 
