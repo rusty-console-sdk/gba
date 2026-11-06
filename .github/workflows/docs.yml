@@ -38,6 +38,17 @@ jobs:
 
       - uses: astral-sh/setup-uv@v10.3.3
 
+      # The docs show the pinned version in their commands, so a bump here
+      # must update them too.
+      - name: Check documented Zensical versions
+        run: |
+          stale=$(grep -rnoE 'zensical==[0-9][0-9.]*' AGENTS.md docs | grep -vF "zensical==${ZENSICAL_VERSION}" || true)
+          if [[ -n $stale ]]; then
+            echo "These commands don't use zensical==${ZENSICAL_VERSION}:"
+            echo "$stale"
+            exit 1
+          fi
+
       - name: Build docs
         run: uvx "zensical==${ZENSICAL_VERSION}" build --strict
 

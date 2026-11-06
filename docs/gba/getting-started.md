@@ -4,17 +4,20 @@ gba-sdk isn't on crates.io yet, so a game lives in a checkout of the repository 
 
 ## Install
 
-You need three things:
+You need four things:
 
 - [rustup](https://rustup.rs). `gba/rust-toolchain.toml` picks a nightly, which rustup installs on the first `cargo` call. Nightly is only there for `-Zbuild-std`: `thumbv4t-none-eabi` ships no prebuilt `core`, so it is built from source. The code itself stays within Rust 1.90.
-- [mise](https://mise.jdx.dev), which installs the rest from the root `mise.toml`: `just`, the `arm-none-eabi` assembler and GCC, and `agb-gbafix`.
-- [mGBA](https://mgba.io) to run ROMs. `just gba::test` runs the SDL build (`mgba`) headless under `xvfb-run`; `just gba::run` opens `mgba-qt`.
+- [mise](https://mise.jdx.dev), which installs the rest from the root `mise.toml`: `just`, the `arm-none-eabi` assembler and GCC, `agb-gbafix`, and uv for building these docs.
+- [mGBA](https://mgba.io) to run ROMs. `just gba::test` runs the SDL build (`mgba`, the `mgba-sdl` package on Debian and Ubuntu); `just gba::run` opens `mgba-qt`.
+- `xvfb-run`, which gives `just gba::test` a display to run mGBA on without a screen. It comes from the `xvfb` package, separate from mGBA.
 
 ```sh
 git clone https://github.com/rusty-console-sdk/sdk
 cd sdk
 mise install
 ```
+
+The tools mise installs are only on `PATH` in a shell where mise is [activated](https://mise.jdx.dev/getting-started.html). Without that, put `mise exec --` in front of each command (`mise exec -- just gba::test hello`).
 
 ## Build and run the example
 
@@ -56,4 +59,4 @@ fn main() -> ! {
 
 ## Building on another machine
 
-The ARM toolchain and emulator can live on a remote machine. `just remote gba::<recipe>` syncs the whole checkout there with `rsync`, runs the recipe through `mise exec` and copies `gba/target/roms/` back; `just gba::run <name>` builds remotely and opens the ROM in a local `mgba-qt`. The host is the SSH alias `sdk-build`, or whatever `SDK_BUILD_HOST` says.
+The ARM toolchain and emulator can live on a remote machine. `just remote gba::<recipe>` syncs the whole checkout there with `rsync`, runs the recipe through `mise exec` and copies every SDK's `target/roms/` back, the GBA's to `gba/target/roms/`; `just gba::run <name>` builds remotely and opens the ROM in a local `mgba-qt`. The host is the SSH alias `sdk-build`, or whatever `SDK_BUILD_HOST` says.

@@ -41,9 +41,11 @@ The display draws 160 lines, then spends 68 lines' worth of time in the vertical
 use gba_sdk::video::wait_for_vblank;
 
 loop {
-    // Update the game, then draw.
     wait_for_vblank();
+    // Draw first, while the blank lasts, then update the game for the next frame.
 }
 ```
+
+Drawing right after the wait gives it the whole blank. Updating first would spend part of the blank on game logic, and the drawing could still be going when the display starts on the next frame.
 
 It polls `VCOUNT`, so it burns the CPU while waiting. Once interrupts are in, it will call the BIOS's `VBlankIntrWait` and sleep instead.

@@ -13,6 +13,7 @@ The root `mise.toml` pins the rest, for every SDK in the collection. The GBA use
 | `just` | 1.59.0 | Runs the recipes. |
 | `arm-none-eabi-gcc` (xpack) | 15.2.1-1.1 | The assembler for both backends; the C compiler and linker for mrustc. The native backend links with `rust-lld`, which comes with Rust. |
 | `agb-gbafix` | 0.25.0 | Fixes the ROM header. |
+| `uv` | 0.13.7 | Runs Zensical (`uvx`) to build these docs. |
 
 `mise install` at the root fetches them. mGBA comes from the system: `mgba-sdl` and `xvfb` for headless runs, `mgba-qt` to look at a ROM.
 

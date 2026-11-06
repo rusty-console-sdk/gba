@@ -28,7 +28,7 @@ The linkers differ: the native backend uses `rust-lld`, the target's default, an
 
 ## Native
 
-`cargo build --target thumbv4t-none-eabi` with `-Zbuild-std=core`, since the target is Tier 3 and ships no prebuilt `core`. `gba/.cargo/config.toml` adds `-Ctarget-cpu=arm7tdmi`, the linker script and the assembled `crt0.o` to the link. `just gba::rom` wraps all of it.
+From the root, `just gba::rom hello` builds a ROM this way. Inside `gba/`, it assembles `crt0.s`, then runs `cargo build --target thumbv4t-none-eabi` with `-Zbuild-std=core`, since the target is Tier 3 and ships no prebuilt `core`. `gba/.cargo/config.toml` adds `-Ctarget-cpu=arm7tdmi`, the linker script and the assembled `crt0.o` to the link. Last, `agb-gbafix` turns the ELF into `gba/target/roms/hello.gba`.
 
 ## mrustc
 

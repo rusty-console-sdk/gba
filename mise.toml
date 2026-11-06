@@ -3,6 +3,8 @@
 # the first one and says who else uses it.
 [tools]
 just = "1.59.0"
+# The docs site: uvx runs Zensical, pinned in .github/workflows/docs.yml.
+uv = "0.13.7"
 
 # gba: arm-none-eabi binutils and GCC, the assembler and linker for both
 # backends and the C compiler for the mrustc backend. mise's
