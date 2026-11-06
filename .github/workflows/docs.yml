@@ -1,0 +1,74 @@
+name: Docs
+
+# Builds the docs without warnings. On pull requests that touch the site or
+# either docs workflow it is the check; the Pages workflow calls it to build
+# what it deploys, so the Zensical version is pinned here and nowhere else.
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "zensical.toml"
+      - "mise.toml"
+      # Its Zensical commands are checked against the pin.
+      - "AGENTS.md"
+      - ".github/workflows/docs.yml"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      upload:
+        description: Upload the built site as the Pages artifact.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  ZENSICAL_VERSION: "0.1.0"
+
+jobs:
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # uv's version lives in the root mise.toml, like every other tool's.
+      - name: Read the uv version
+        id: uv
+        run: |
+          version=$(sed -nE 's/^uv = "([^"]+)"$/\1/p' mise.toml)
+          if [[ -z $version ]]; then
+            echo "mise.toml has no uv pin" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: ${{ steps.uv.outputs.version }}
+
+      # The docs show the pinned version in their commands, so a bump here
+      # must update them too.
+      - name: Check documented Zensical versions
+        run: |
+          stale=$(grep -rnoE 'zensical==[0-9][0-9.]*' AGENTS.md docs | grep -vF "zensical==${ZENSICAL_VERSION}" || true)
+          if [[ -n $stale ]]; then
+            echo "These commands don't use zensical==${ZENSICAL_VERSION}:"
+            echo "$stale"
+            exit 1
+          fi
+
+      - name: Build docs
+        run: uvx "zensical==${ZENSICAL_VERSION}" build --strict
+
+      - if: inputs.upload
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site

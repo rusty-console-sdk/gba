@@ -70,7 +70,13 @@ Use modern code practices:
 
 Always update the docs if necessary when changing or adding code. If the docs already contain outdated information, expand your scope to cover that info too. That includes the `AGENTS.md` files: when the layout, build, backends or tooling change, update the overview and the build section in the one that owns it.
 
-The docs will be a [Zensical](https://zensical.org) site: `zensical.toml` at the root, pages in `docs/`. `uvx zensical build --strict` checks it, and `uvx zensical serve` previews it. Until the site exists, the crate docs (`//!` and `///` comments) and the `AGENTS.md` files are the docs, so keep them current.
+The docs are one [Zensical](https://zensical.org) site for the whole collection: `zensical.toml` at the root, pages in `docs/`, published at `https://rusty-console-sdk.github.io/sdk/`. `uvx "zensical==0.1.0" build --strict` at the root checks it and writes `site/` (ignored by git), and `uvx "zensical==0.1.0" serve` previews it. CI pins the version once, in `.github/workflows/docs.yml`; bump it there and in these commands together, since the Docs workflow fails when a documented command names another version. `mise install` provides uv. The Docs workflow runs the strict build on pull requests that touch the docs or either docs workflow. On every push to `main` that touches them, the Pages workflow calls the Docs workflow to build the site, then publishes it (the repository's Pages source is already GitHub Actions).
+
+- `docs/index.md`: the collection, the table of consoles, how the repository fits together.
+- `docs/consoles.md`: the plan for the consoles after the GBA, their order and compiler path. Start from it when choosing or starting a console, recheck the facts it marks as changing, and update it when the plan changes.
+- `docs/<console>/`: one directory per SDK, and one `nav` section in `zensical.toml` listing its pages. Each SDK's `AGENTS.md` lists what its pages cover. Commands on these pages are written from the root (`just gba::test`), since that is where a fresh checkout starts.
+
+Code in the docs that forms a whole program is compiled before committing; the crate docs (`//!` and `///` comments) stay current too.
 
 Compile the examples you put in the docs before committing them, on every backend the SDK has.
 
