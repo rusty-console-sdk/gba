@@ -17,7 +17,7 @@ let raw = Color(0x7FFF);          // white, as the hardware sees it
 
 ## Mode 3
 
-Mode 3 is the simplest display mode: one 240 by 160 frame buffer of colors, drawn straight into VRAM. There is no second buffer, so what you write is what the next scanline shows.
+Mode 3 is the simplest display mode: one 240 by 160 frame buffer of colors, drawn straight into VRAM. `WIDTH` (240) and `HEIGHT` (160) are the screen's size in pixels, as `usize`. There is no second buffer, so what you write is what the next scanline shows.
 
 ```rust
 use gba_sdk::video::{Color, Mode3, HEIGHT, WIDTH};

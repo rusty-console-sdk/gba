@@ -11,7 +11,7 @@ The root `mise.toml` pins the rest, for every SDK in the collection. The GBA use
 | Tool | Version | Role |
 | --- | --- | --- |
 | `just` | 1.59.0 | Runs the recipes. |
-| `arm-none-eabi-gcc` (xpack) | 15.2.1-1.1 | Assembler and linker for both backends; the C compiler for mrustc. |
+| `arm-none-eabi-gcc` (xpack) | 15.2.1-1.1 | The assembler for both backends; the C compiler and linker for mrustc. The native backend links with `rust-lld`, which comes with Rust. |
 | `agb-gbafix` | 0.25.0 | Fixes the ROM header. |
 
 `mise install` at the root fetches them. mGBA comes from the system: `mgba-sdl` and `xvfb` for headless runs, `mgba-qt` to look at a ROM.
@@ -50,9 +50,9 @@ From the root of the checkout. Inside `gba/`, drop the `gba::` prefix.
 | `just gba::asm` | Assembles `crt0.s` into `target/rt/crt0.o`. The recipes below run it first. |
 | `just gba::rom <name>` | Builds a ROM into `target/roms/<name>.gba` and prints its section sizes. |
 | `just gba::test [name] [line]` | Builds the ROM, runs it headless in mGBA for four seconds and checks that its log contains `line`. Defaults to `hello` and its line. |
-| `just remote gba::<recipe>` | Syncs the checkout to the `sdk-build` host (or `SDK_BUILD_HOST`) and runs the recipe there. ROMs come back to `gba/target/roms/`. |
+| `just remote gba::<recipe>` | Syncs the checkout to the `sdk-build` host (or `SDK_BUILD_HOST`) and runs the recipe there. Every SDK's `target/roms/` comes back, the GBA's to `gba/target/roms/`. |
 | `just gba::run [name]` | Builds remotely and opens the ROM in a local `mgba-qt`. |
-| `uvx zensical build --strict` | Run at the root: builds this site into `site/`. `uvx zensical serve` previews it. |
+| `uvx "zensical==0.1.0" build --strict` | Run at the root: builds this site into `site/`. `serve` in place of `build --strict` previews it. |
 
 ## Testing
 
@@ -64,4 +64,4 @@ Emulators are not hardware. Timing-sensitive features need a run on a real GBA b
 
 ## Docs
 
-The site is built by [Zensical](https://zensical.org) from the root `docs/`, with the GBA's pages in `docs/gba/`. `uvx zensical build --strict` must pass; the Docs workflow runs it on pull requests that touch the docs, and the Pages workflow publishes `main`. Code in the docs is compiled before it is committed. Every change to the code that changes what a page says updates the page in the same change.
+The site is built by [Zensical](https://zensical.org) from the root `docs/`, with the GBA's pages in `docs/gba/`. The strict build must pass, with the Zensical version that `.github/workflows/docs.yml` pins. The Docs workflow runs it on pull requests that touch the docs or either docs workflow, and on `main` the Pages workflow calls the same workflow to build the site, then publishes it. Code in the docs is compiled before it is committed. Every change to the code that changes what a page says updates the page in the same change.

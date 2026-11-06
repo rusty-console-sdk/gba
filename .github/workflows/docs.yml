@@ -1,28 +1,33 @@
 name: Docs
 
-# Checks that the docs build without warnings. Runs only when the docs change.
-# Deploying is the Pages workflow's job.
+# Builds the docs without warnings. On pull requests that touch the site or
+# either docs workflow it is the check; the Pages workflow calls it to build
+# what it deploys, so the Zensical version is pinned here and nowhere else.
 
 on:
-  push:
-    branches: [main]
-    paths: &paths
+  pull_request:
+    paths:
       - "docs/**"
       - "zensical.toml"
       - ".github/workflows/docs.yml"
-  pull_request:
-    paths: *paths
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      upload:
+        description: Upload the built site as the Pages artifact.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: docs-${{ github.ref }}
-  cancel-in-progress: true
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  ZENSICAL_VERSION: "0.0.74"
+  ZENSICAL_VERSION: "0.1.0"
 
 jobs:
   docs:
@@ -35,3 +40,8 @@ jobs:
 
       - name: Build docs
         run: uvx "zensical==${ZENSICAL_VERSION}" build --strict
+
+      - if: inputs.upload
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site

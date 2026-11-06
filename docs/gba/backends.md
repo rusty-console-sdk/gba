@@ -7,7 +7,7 @@ gba-sdk compiles the same source through two backends. One exists.
 | native | `rustc` (LLVM) for `thumbv4t-none-eabi` | Builds and boots. The reference: every feature works here first. |
 | mrustc | `mrustc` to C, then `arm-none-eabi-gcc` | Planned. Starts with a spike that builds `core` and the hello ROM. |
 
-Both share the assembler, the linker script, the startup code and `agb-gbafix`, so a ROM from either backend has the same layout. Only the Rust half differs.
+Both share the assembler, the linker script (though not the linker), the startup code and `agb-gbafix`, so a ROM from either backend has the same layout. Only the Rust half differs.
 
 ```mermaid
 flowchart TD
@@ -15,11 +15,16 @@ flowchart TD
   src --> mrustc[mrustc, custom target]
   mrustc --> c[Generated C] --> gcc[arm-none-eabi-gcc]
   asm[crt0.s] --> as[arm-none-eabi-as]
-  rustc --> ld[arm-none-eabi-ld with gba.ld]
-  gcc --> ld
+  rustc --> lld[rust-lld with gba.ld]
+  gcc --> ld[arm-none-eabi-ld with gba.ld]
+  as --> lld
   as --> ld
-  ld --> gbafix[agb-gbafix] --> rom[.gba ROM]
+  lld --> gbafix[agb-gbafix]
+  ld --> gbafix
+  gbafix --> rom[.gba ROM]
 ```
+
+The linkers differ: the native backend uses `rust-lld`, the target's default, and mrustc will link through GCC's `arm-none-eabi-ld`. Both read the same `gba.ld`.
 
 ## Native
 
@@ -29,7 +34,7 @@ flowchart TD
 
 [mrustc](https://github.com/thepowersgang/mrustc) is a Rust compiler written in C++ that emits C and hands it to GCC. The point of supporting it is GCC's code generation (the established toolchain for GBA games) and a build with no LLVM in it. It is a second backend, not a C port: its output is generated code nobody maintains.
 
-mrustc assumes its input is valid Rust and has no borrow checker, so `rustc` checks every build first, and a disagreement between the backends is a bug on the mrustc side until shown otherwise. The constraints it puts on the SDK's code are listed in the repository's `AGENTS.md`: Rust 1.90 as the language floor, assembly only in `.s` files, `extern "C"` at every ABI boundary, no proc macros or build scripts in ROM crates, no compare-and-swap atomics.
+mrustc assumes its input is valid Rust and has no borrow checker, so `rustc` checks every build first, and a disagreement between the backends is a bug on the mrustc side until shown otherwise. The constraints it puts on the SDK's code are listed in [`gba/AGENTS.md`](https://github.com/rusty-console-sdk/sdk/blob/main/gba/AGENTS.md): Rust 1.90 as the language floor, assembly only in `.s` files, `extern "C"` at every ABI boundary, no proc macros or build scripts in ROM crates, no compare-and-swap atomics.
 
 ## What works where
 

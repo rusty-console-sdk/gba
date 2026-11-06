@@ -7,7 +7,7 @@ gba-sdk isn't on crates.io yet, so a game lives in a checkout of the repository 
 You need three things:
 
 - [rustup](https://rustup.rs). `gba/rust-toolchain.toml` picks a nightly, which rustup installs on the first `cargo` call. Nightly is only there for `-Zbuild-std`: `thumbv4t-none-eabi` ships no prebuilt `core`, so it is built from source. The code itself stays within Rust 1.90.
-- [mise](https://mise.jdx.dev), which installs the rest from the root `mise.toml`: `just`, the `arm-none-eabi` assembler, linker and GCC, and `agb-gbafix`.
+- [mise](https://mise.jdx.dev), which installs the rest from the root `mise.toml`: `just`, the `arm-none-eabi` assembler and GCC, and `agb-gbafix`.
 - [mGBA](https://mgba.io) to run ROMs. `just gba::test` runs the SDL build (`mgba`) headless under `xvfb-run`; `just gba::run` opens `mgba-qt`.
 
 ```sh
