@@ -1,38 +1,23 @@
-# gba
+# Rusty Console SDK
 
-Game Boy Advance SDK for Rust, published as `gba-sdk`.
+Rust SDKs for game consoles, one directory per console.
 
-Games are `no_std` Rust built for `thumbv4t-none-eabi`. A second backend through [mrustc](https://github.com/thepowersgang/mrustc) (Rust to C, then `arm-none-eabi-gcc`) is planned.
+| Console | Directory | Crate | Status |
+| --- | --- | --- | --- |
+| Game Boy Advance | [`gba/`](gba/) | `gba-sdk` | A ROM boots in mGBA: mode 3, buttons, logging. Not on crates.io yet. |
 
-```rust
-#![no_std]
-#![no_main]
-
-use gba_sdk::entry;
-use gba_sdk::video::{wait_for_vblank, Color, Mode3};
-
-entry!(main);
-
-fn main() -> ! {
-    let mut screen = Mode3::enable();
-    screen.clear(Color::rgb(4, 8, 20));
-    loop {
-        wait_for_vblank();
-    }
-}
-```
+More consoles will follow the GBA.
 
 ## Building
 
-Needs rustup, [mise](https://mise.jdx.dev) and, to run ROMs, mGBA.
+Builds need rustup and [mise](https://mise.jdx.dev); running a ROM's test also needs mGBA and `xvfb-run`. One `mise install` at the root fetches the tools for every SDK, and each SDK pins its own Rust toolchain in its directory.
 
 ```sh
-mise install          # just, arm-none-eabi-gcc, agb-gbafix
-just check            # fmt and clippy for the GBA
-just rom hello        # target/roms/hello.gba
-just test hello       # runs it headless in mGBA and checks its log
+mise install
+just                    # lists every SDK's recipes
+just gba::test hello    # builds the GBA example and runs it in mGBA
 ```
 
-The nightly toolchain in `rust-toolchain.toml` installs itself on the first `cargo` call. Builds can also run on a remote machine with `just remote <recipe>`; see `AGENTS.md`.
+To build on another machine over SSH instead, set up that machine the same way and run `just remote gba::test hello`. `AGENTS.md` describes the setup.
 
 License: BSD-3-Clause.

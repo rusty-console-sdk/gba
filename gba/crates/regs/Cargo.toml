@@ -6,6 +6,6 @@ edition = "2021"
 # The newest rustc source mrustc is tested against. Use nothing newer.
 rust-version = "1.90"
 license = "BSD-3-Clause"
-repository = "https://github.com/rusty-console-sdk/gba"
+repository = "https://github.com/rusty-console-sdk/sdk"
 
 [dependencies]
