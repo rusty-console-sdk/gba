@@ -10,6 +10,8 @@ on:
       - "docs/**"
       - "zensical.toml"
       - "mise.toml"
+      # Its Zensical commands are checked against the pin.
+      - "AGENTS.md"
       - ".github/workflows/docs.yml"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
