@@ -35,7 +35,9 @@ rom name: asm
 test name="hello" expect="hello from gba-sdk": (rom name)
     tools/run-rom.sh target/roms/{{name}}.gba "{{expect}}"
 
-# Build a ROM on the build server and open it in a local mgba-qt.
+# Build a ROM on the build server and open it in a local mgba-qt. A module
+# can't call its parent's recipes, so this runs the root's `remote` from the
+# root, one level up as every SDK is.
 run name="hello":
-    just --justfile ../justfile --working-directory .. remote gba::rom "{{name}}"
+    {{quote(just_executable())}} --justfile ../justfile --working-directory .. remote gba::rom "$1"
     mgba-qt target/roms/{{name}}.gba

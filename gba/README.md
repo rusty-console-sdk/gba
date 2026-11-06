@@ -1,6 +1,6 @@
 # gba
 
-Game Boy Advance SDK for Rust, published as `gba-sdk`.
+Game Boy Advance SDK for Rust, to be published as `gba-sdk` (not on crates.io yet).
 
 Games are `no_std` Rust built for `thumbv4t-none-eabi`. A second backend through [mrustc](https://github.com/thepowersgang/mrustc) (Rust to C, then `arm-none-eabi-gcc`) is planned.
 

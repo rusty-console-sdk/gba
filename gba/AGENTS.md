@@ -4,7 +4,7 @@ This is the Game Boy Advance SDK in the Rusty Console SDK monorepo. The root `AG
 
 ## Overview
 
-gba is a Game Boy Advance SDK for Rust, published on crates.io as `gba-sdk`. Games and the SDK itself are written in `no_std` Rust and compile through two backends from the same source. License: BSD-3-Clause.
+gba is a Game Boy Advance SDK for Rust, to be published on crates.io as `gba-sdk` (it isn't yet). Games and the SDK itself are written in `no_std` Rust and compile through two backends from the same source. License: BSD-3-Clause.
 
 **Status: the native half of milestone 0 is built.** A ROM boots in mGBA from `rt`'s startup code, fills the screen in mode 3, reads the buttons and logs to mGBA. Nothing in the mrustc column exists yet. Sections below marked "planned" describe intent, not code; when a part gets built, rewrite its section to describe what exists.
 
@@ -26,7 +26,7 @@ So mrustc is worth supporting, as long as it never holds the SDK back:
 
 ### Layout
 
-Each crate has one job. The crates that end up in a ROM stay free of dependencies wherever possible, because every dependency has to compile under mrustc too. The SDK's Cargo workspace is `gba/Cargo.toml`. Each manifest spells out its `version`, `edition`, `rust-version = "1.90"` and path dependencies rather than inheriting them from `[workspace.package]`, since minicargo isn't known to read workspace inheritance.
+Each crate has one job. The crates that end up in a ROM stay free of dependencies wherever possible, because every dependency has to compile under mrustc too. The SDK's Cargo workspace is `Cargo.toml` here. Each manifest spells out its `version`, `edition`, `rust-version = "1.90"` and path dependencies rather than inheriting them from `[workspace.package]`, since minicargo isn't known to read workspace inheritance.
 
 - `crates/regs` (`gba-sdk-regs`): typed, volatile access to memory-mapped registers and memory. `Reg<T>` is one cell with `read` and `write`; `Block<T, N>` is a run of them (`get`, `fill`). Holds the register constants (`DISPCNT`, `VCOUNT`, `KEYINPUT`, `IME`, `MODE3_FRAME` and `MODE3_FRAME_WORDS`) and mGBA's debug registers under `mgba`. The constants over VRAM are `u16` or `u32`, since VRAM, palette RAM and OAM mishandle byte writes; `Block<u8, _>` exists only for mGBA's string buffer, so never make one over hardware memory. No policy.
 - `crates/rt` (`gba-sdk-rt`): what every ROM links. `src/crt0.s` is the ROM header and startup (gas, ARM mode): the IRQ, SVC and user stacks, `.data` copied from ROM to IWRAM, `.bss` zeroed, then `bx` to `main`. `gba.ld` is the linker script: `.data` takes `.iwram*` input sections so `#[link_section = ".iwram"]` code lands in IWRAM, and the IWRAM region stops 2K short of the user stack so an oversized `.data` or `.bss` fails at link time. `src/lib.rs` has `entry!` (defines the exported `main`), the `log!` macro and `MgbaLog` over mGBA's debug registers, and the panic handler, which logs at `Fatal` and loops. Planned here: the interrupt trampoline, BIOS calls and the memory functions.
@@ -45,12 +45,16 @@ flowchart TD
   mrustc --> c[Generated C]
   c --> gcc[arm-none-eabi-gcc]
   asm[crates/rt assembly] --> as[arm-none-eabi-as]
-  rustc --> ld[arm-none-eabi-ld, shared linker script]
-  gcc --> ld
+  rustc --> lld[rust-lld]
+  gcc --> ld[arm-none-eabi-ld]
+  as --> lld
   as --> ld
-  ld --> elf[ELF]
-  elf --> objcopy[objcopy and gbafix]
-  objcopy --> rom[.gba ROM]
+  script[Shared linker script] --> lld
+  script --> ld
+  lld --> elf[ELF]
+  ld --> elf
+  elf --> gbafix[agb-gbafix]
+  gbafix --> rom[.gba ROM]
   rom --> mgba[mGBA test runner]
 ```
 
@@ -60,7 +64,7 @@ flowchart TD
 - Memory: IWRAM 32 KB at `0x03000000` (32-bit bus, no wait states), EWRAM 256 KB at `0x02000000` (16-bit bus, slow), ROM at `0x08000000` (16-bit bus, wait states). Hot code goes in IWRAM. Thumb is the default because of the ROM's 16-bit bus; ARM mode only pays off in IWRAM.
 - Video memory: palette at `0x05000000`, VRAM at `0x06000000`, OAM at `0x07000000`. Byte writes misbehave in all three (a VRAM or palette byte write is duplicated across the halfword, an OAM byte write is ignored). The `regs` API must not allow 8-bit writes there, and it must not let `memcpy` do them either.
 - Interrupts: the BIOS dispatches to a handler whose address is stored at `0x03007FFC`, and it enters that handler in ARM mode.
-- ROM header: 192 bytes, starting with an ARM branch to the entry point. `objcopy` output needs `gbafix` before it boots on hardware.
+- ROM header: 192 bytes, starting with an ARM branch to the entry point. A ROM needs its header checksum fixed (`agb-gbafix`) before it boots on hardware.
 
 ## Building and testing
 
@@ -75,7 +79,7 @@ Builds run on the remote build server; the root `AGENTS.md` says how.
 
 ### Commands
 
-`gba/justfile` is the root's `gba` module, so from the root these are `just gba::check` and so on, and `just remote gba::check` runs one on the build server. Inside `gba/` the prefix can be dropped. Recipes run in `gba/` and hold no logic beyond running things; logic goes in `tools/`.
+This `justfile` is the root's `gba` module, so from the root these are `just gba::check` and so on, and `just remote gba::check` runs one on the build server. Inside `gba/` the prefix can be dropped. Recipes run in `gba/` and hold no logic beyond running things; logic goes in `tools/`.
 
 - `just asm`: assembles `crates/rt/src/crt0.s` into `target/rt/crt0.o`. The other recipes run it first.
 - `just check`: `cargo fmt --check` and `clippy` for the target with warnings denied. Not `--all-targets`: test harnesses need `std`, which the target doesn't have.
@@ -87,6 +91,7 @@ Builds run on the remote build server; the root `AGENTS.md` says how.
 ### Testing
 
 - Add a test with every behavior change.
+- Compile a docs snippet as its own example crate, never by swapping in an existing example's source. `rsync -a` puts the original file back with its old mtime, so cargo keeps the snippet's binary and `just test` runs the wrong ROM.
 - Pure logic (fixed-point math, asset parsing) gets ordinary `cargo test` on the host. Keep it in modules that don't touch hardware. Nothing has this yet.
 - Anything touching hardware is a ROM that runs in mGBA and reports through `log!`. Today that is `examples/hello` through `just test`. Planned: ROMs in `tests/` through `tools/test-runner`, which wraps libmgba and reads results through mGBA's debug output registers. agb's `emulator/test-runner` is the model. Check agb's license before copying from it.
 - The same ROM source runs under both backends with the same expected results. A test that only passes on one backend gets marked with a linked reason, not deleted.
@@ -129,7 +134,7 @@ Prove the riskiest assumption first, then build outward. Each milestone ends wit
 5. **Sound.** Direct Sound with a mixer in IWRAM, then the PSG channels. This is the heaviest test of the IWRAM and ARM-mode story.
 6. **Docs and a real game.** A small complete game in `examples/`, built on both backends, as the proof that the API holds up.
 
-CI (planned) runs on GitHub Actions with no dependency on the tailnet: `just check` and `just test` for native on every push, with the mrustc build cached by its pinned commit. Reach for it after milestone 1, once there's something to protect.
+CI (planned) runs on GitHub Actions without the build server: `just check` and `just test` for native on every push, with the mrustc build cached by its pinned commit. Reach for it after milestone 1, once there's something to protect.
 
 ## Code Quality
 

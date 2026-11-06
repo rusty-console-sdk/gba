@@ -10,12 +10,14 @@ More consoles will follow the GBA.
 
 ## Building
 
-Needs rustup and [mise](https://mise.jdx.dev). One `mise install` at the root fetches the tools for every SDK, and each SDK pins its own Rust toolchain in its directory.
+Builds need rustup and [mise](https://mise.jdx.dev); running a ROM's test also needs mGBA and `xvfb-run`. One `mise install` at the root fetches the tools for every SDK, and each SDK pins its own Rust toolchain in its directory.
 
 ```sh
 mise install
 just                    # lists every SDK's recipes
 just gba::test hello    # builds the GBA example and runs it in mGBA
 ```
+
+To build on another machine over SSH instead, set up that machine the same way and run `just remote gba::test hello`. `AGENTS.md` describes the setup.
 
 License: BSD-3-Clause.

@@ -17,6 +17,6 @@ default:
 # Built ROMs come back to <sdk>/target/roms/.
 # Sync to the build server and run a recipe there, like `just remote gba::test`.
 remote +args:
-    rsync -az --delete --exclude .git --filter=':- .gitignore' ./ {{host}}:{{remote_dir}}/
-    ssh {{host}} "export PATH=\"\$HOME/.cargo/bin:\$HOME/.local/bin:\$PATH\" && cd {{remote_dir}} && mise trust -q && mise exec -- just $(printf '%q ' "$@")"
-    rsync -az -m --include='/*/' --include='/*/target/' --include='/*/target/roms/***' --exclude='*' {{host}}:{{remote_dir}}/ ./
+    rsync -az --delete --exclude .git --filter=':- .gitignore' ./ {{quote(host + ":" + remote_dir + "/")}}
+    ssh -- {{quote(host)}} "export PATH=\"\$HOME/.cargo/bin:\$HOME/.local/bin:\$PATH\" && cd {{remote_dir}} && mise trust -q && mise exec -- just $(printf '%q ' "$@")"
+    rsync -az -m --include='/*/' --include='/*/target/' --include='/*/target/roms/***' --exclude='*' {{quote(host + ":" + remote_dir + "/")}} ./
