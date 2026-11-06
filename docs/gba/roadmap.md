@@ -1,6 +1,8 @@
 # Roadmap
 
-Finished items stay in their section with a check mark, so each section shows how far along it is. The milestones are in order: each one ends with ROMs that pass on every backend that is still in play.
+Finished items stay in their section with a check mark, so each section shows how far along it is. The milestones are in order: each one ends with ROMs that pass on the native backend, and on mrustc as well once the spike says go. Native never waits on mrustc, so the spike's open items run alongside milestone 1 instead of holding it up.
+
+The goal is an SDK that feels like a small [raylib](https://www.raylib.com): a frame loop, calls like `draw_sprite` and `draw_text` every frame, art loaded from converted files, and math types for movement and collision. Those calls go to the sprite and tile hardware, not to pixels, because redrawing a mode 3 frame buffer takes most of a frame on its own. The game writes a copy of sprite memory (OAM) in RAM, and the frame loop copies it to the hardware during the vertical blank.
 
 ## Milestone 0: the spike
 
@@ -16,6 +18,10 @@ Finished items stay in their section with a check mark, so each section shows ho
 
 - [ ] A test runner over libmgba, test ROMs under `tests/`, every test on both backends.
 - [ ] Interrupts: the trampoline in `rt`, `VBlankIntrWait`, `wait_for_vblank` that sleeps.
+- [ ] DMA, including a fill for `Mode3::clear`.
+- [ ] A frame loop: ending a frame waits for the vertical blank, then copies the RAM copy of OAM, palette changes and scroll registers to the hardware. A frame counter for timing and animation.
+- [ ] Button edges: pressed and released this frame, and key repeat for menus.
+- [ ] Fixed-point math: an `Fx` type with the usual operators, tested on the host with `cargo test`.
 - [ ] `log!` that is safe to interrupt: mGBA's string buffer is shared, so a handler that logs would corrupt a line in progress.
 - [ ] Panics on screen as well as in the log.
 - [ ] Memory functions in `rt` as assembly, shared by both backends.
@@ -24,24 +30,31 @@ Finished items stay in their section with a check mark, so each section shows ho
 
 ## Milestone 2: graphics
 
-- [ ] Tiled backgrounds, sprites, palettes.
-- [ ] Windows and blending.
-- [ ] DMA, including a fill for `Mode3::clear`.
-- [ ] The asset converter for images.
+- [ ] Sprites drawn each frame through the frame loop, with flipping, priority, and affine rotation and scaling. Frame sequences for animation.
+- [ ] Tiled backgrounds with scrolling, including maps bigger than the hardware's 64 by 64 tiles.
+- [ ] Palettes.
+- [ ] A VRAM allocator for tiles and palette banks, so loading art returns a typed handle and games never pick tile indices by hand.
+- [ ] Text: a built-in 8 by 8 font on its own background layer, `draw_text`, and a writer that works with `write!`.
+- [ ] The asset converter: PNG images to tiles and palettes, and maps from the Tiled editor to tilemaps. A `macro_rules!` macro wraps the output of `include_bytes!` in a typed handle.
 - [ ] Frame comparisons against goldens.
+- [ ] A small game in `gba/examples/` (Breakout or similar) with sprites, a background, text and input, to try the API out while it is still cheap to change.
 
 ## Milestone 3: game loop essentials
 
-- [ ] Button edges: pressed and released this frame.
+- [ ] `Vec2`, `Rect` and collision checks: rectangle against rectangle, point against rectangle, circle against rectangle.
+- [ ] A sine table, an angle type and a small, fast random number generator.
+- [ ] A 2D camera: one offset applied to background scrolling and sprite positions together.
+- [ ] Mode 4 with page flipping, and shape drawing (rectangles, lines, circles) in IWRAM for prototypes and debug overlays.
+- [ ] Windows and blending, with screen fades.
 - [ ] Timers.
-- [ ] Fixed-point math.
+- [ ] Sound effects on the PSG channels: tones and noise.
 - [ ] An optional allocator over EWRAM.
+
+## Milestone 4: sound and saves
+
+- [ ] Direct Sound with a mixer in IWRAM, and WAV files in the asset converter.
+- [ ] Music: a small tracker format or a MOD player.
 - [ ] Saves: SRAM, then flash and EEPROM.
-
-## Milestone 4: sound
-
-- [ ] Direct Sound with a mixer in IWRAM.
-- [ ] The PSG channels.
 
 ## Milestone 5: a real game
 
